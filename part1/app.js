@@ -12,7 +12,7 @@ async function createDatabase() {
   });
 
   await connection.query(`CREATE DATABASE IF NOT EXISTS DogWalkService`);
-  console.log('✅ Database DogWalkService ensured.');
+  console.log('Database DogWalkService ensured.');
   await connection.end();
 }
 
