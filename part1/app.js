@@ -4,12 +4,11 @@ const mysql = require('mysql2/promise');
 const app = express();
 app.use(express.json());
 
-// 第一步：创建数据库（如果不存在）
 async function createDatabase() {
   const connection = await mysql.createConnection({
     host: '127.0.0.1',
-    user: 'root',      // 修改成你的用户名
-    password: ''       // 修改成你的密码
+    user: 'root',
+    password: ''
   });
 
   await connection.query(`CREATE DATABASE IF NOT EXISTS DogWalkService`);
@@ -17,7 +16,6 @@ async function createDatabase() {
   await connection.end();
 }
 
-// 第二步：创建连接池
 const pool = mysql.createPool({
   host: '127.0.0.1',
   user: 'root',
@@ -27,11 +25,9 @@ const pool = mysql.createPool({
   connectionLimit: 10
 });
 
-// 第三步：插入测试数据
 async function insertData() {
   const conn = await pool.getConnection();
   try {
-    // 创建表（如果不存在）—— 你也可以提前用 schema.sql 手动执行
     await conn.query(`
       CREATE TABLE IF NOT EXISTS Users (
         user_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -95,7 +91,6 @@ async function insertData() {
       )
     `);
 
-    // 清空数据
     await conn.query('DELETE FROM WalkRatings');
     await conn.query('DELETE FROM WalkApplications');
     await conn.query('DELETE FROM WalkRequests');
