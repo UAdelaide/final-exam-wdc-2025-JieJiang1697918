@@ -158,7 +158,31 @@ let db;
 
 // Routes
 
+app.post('/api/login', async (req, res) => {
+  const { username, password } = req.body;
 
+  try {
+    const [rows] = await db.execute(
+      'SELECT user_id, role FROM Users WHERE username = ? AND password_hash = ?',
+      [username, password]
+    );
+
+    if (rows.length === 1) {
+      req.session.user = {
+        user_id: rows[0].user_id,
+        role: rows[0].role,
+        username: username
+      };
+
+      res.json({ message: 'Login successful', role: rows[0].role });
+    } else {
+      res.status(401).json({ error: 'Invalid username or password' });
+    }
+  } catch (err) {
+    console.error('Login error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 const walkRoutes = require('./routes/walkRoutes');
 const userRoutes = require('./routes/userRoutes');
