@@ -62,7 +62,17 @@
 <body>
     <header>Dog Walking Service</header>
     <p>Dog Walking Service</p>
+
     <div class="marquee"> Book your dog walk today!</div>
+
+    <div id="app" class="content">
+    <div class="card" v-for="n in 20" :key="n">
+      <img :src="dogImage" style="width: 100%; height: 100px;" alt="">
+      <p><strong>Name:</strong> Doggo {{n}}</p>
+      <p><strong>Breed:</strong> Unknown</p>
+      <p><strong>Info:</strong> Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+    </div>
+  </div>
 </body>
 
 
