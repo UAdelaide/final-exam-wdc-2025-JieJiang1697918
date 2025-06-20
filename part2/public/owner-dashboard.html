@@ -24,7 +24,7 @@
         <form @submit.prevent="submitWalkRequest">
           <div class="mb-3">
             <label class="form-label">Dog ID</label>
-              <select v-model="form.dog_id" class="form-select" required>
+            <select v-model="form.dog_id" class="form-select" required>
               <option v-for="dog in myDogs" :value="dog.dog_id">
                 {{ dog.name }} ({{ dog.size }})
               </option>
