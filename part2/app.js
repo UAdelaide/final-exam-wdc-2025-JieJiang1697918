@@ -208,7 +208,7 @@ app.get('/api/users/mydogs', (req, res) => {
     console.error('Error loading dogs:', err);
     res.status(500).json({ error: 'Internal server error' });
   });
-  
+
 });
 
 const walkRoutes = require('./routes/walkRoutes');
