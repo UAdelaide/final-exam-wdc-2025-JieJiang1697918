@@ -280,21 +280,5 @@ app.get('/api/dogs', async (req, res) => {
   }
 });
 
-app.get('/api/dogs', async (req, res) => {
-  try {
-    const [rows] = await db.execute(`
-      SELECT d.dog_id, d.name, d.size, u.username AS owner_name
-      FROM Dogs d
-      JOIN Users u ON d.owner_id = u.user_id
-      ORDER BY d.name ASC
-    `);
-
-    res.json(rows);
-  } catch (err) {
-    console.error('Error loading dogs:', err);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
 // Export the app instead of listening here
 module.exports = app;
