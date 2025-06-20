@@ -71,7 +71,9 @@ let db;
 
 
     // Insert data if table is empty
-    await connection.query(`
+    const [rows] = await db.execute('SELECT COUNT(*) AS count FROM Users');
+    if (rows[0].count === 0) {
+      await db.execute(`
         INSERT INTO Users (username, email, password_hash, role) VALUES
         ('alice123', 'alice@example.com', 'hashed123', 'owner'),
         ('bobwalker', 'bob@example.com', 'hashed456', 'walker'),
@@ -81,18 +83,20 @@ let db;
       `);
     }
 
-    await connection.query(`
+    const [rows] = await db.execute('SELECT COUNT(*) AS count FROM Users');
+    if (rows[0].count === 0) {
+      await db.execute(`
         INSERT INTO Dogs (owner_id, name, size)
-          VALUES
-          ((SELECT user_id FROM Users WHERE username = 'alice123'), 'Max', 'medium'),
-          ((SELECT user_id FROM Users WHERE username = 'carol123'), 'Bella', 'small'),
-          ((SELECT user_id FROM Users WHERE username = 'jimmy123'), 'Apple', 'large'),
-          ((SELECT user_id FROM Users WHERE username = 'alice123'), 'Banana', 'small'),
-          ((SELECT user_id FROM Users WHERE username = 'carol123'), 'Cake', 'medium')
+VALUES
+((SELECT user_id FROM Users WHERE username = 'alice123'), 'Max', 'medium'),
+((SELECT user_id FROM Users WHERE username = 'carol123'), 'Bella', 'small'),
+((SELECT user_id FROM Users WHERE username = 'jimmy123'), 'Apple', 'large'),
+((SELECT user_id FROM Users WHERE username = 'alice123'), 'Banana', 'small'),
+((SELECT user_id FROM Users WHERE username = 'carol123'), 'Cake', 'medium');
       `);
     }
 
-    catch (err) {
+  } catch (err) {
     console.error('Error setting up database. Ensure Mysql is running: service mysql start', err);
   }
 })();
