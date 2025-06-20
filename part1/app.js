@@ -15,7 +15,7 @@ let db;
 
 (async () => {
   try {
-    console.log('🔗 Connecting to MySQL server...');
+    console.log('Connecting to MySQL server...');
     const connection = await mysql.createConnection({
       host: '127.0.0.1',
       user: 'root',
@@ -25,7 +25,7 @@ let db;
     console.log('Connected to MySQL.');
 
     await connection.query('CREATE DATABASE IF NOT EXISTS DogWalkService');
-    console.log('✅ Database "DogWalkService" ready.');
+    console.log('Database "DogWalkService" ready.');
 
     await connection.end();
 
@@ -36,7 +36,7 @@ let db;
       database: 'DogWalkService'
     });
 
-    console.log('✅ Connected to database "DogWalkService".');
+    console.log('Connected to database "DogWalkService".');
 
     await db.execute(`
       CREATE TABLE IF NOT EXISTS Users (
