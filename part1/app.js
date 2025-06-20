@@ -7,6 +7,16 @@ const testdata = require('./testdata');
 
 var app = express();
 
+const pool = mysql.createPool({
+  host: '127.0.0.1',
+  user: 'root',
+  password: '',
+  database: 'DogWalkService',
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
+});
+
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
