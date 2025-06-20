@@ -13,6 +13,139 @@ app.use(logger('dev'));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, '/public')));
 
+let db;
+
+(async () => {
+  try {
+    console.log('Connecting to MySQL server...');
+    const connection = await mysql.createConnection({
+      host: '127.0.0.1',
+      user: 'root',
+      password: ''
+    });
+
+    console.log('Connected to MySQL.');
+
+    await connection.query('CREATE DATABASE IF NOT EXISTS DogWalkService');
+    console.log('Database "DogWalkService" ready.');
+
+    await connection.end();
+
+    db = await mysql.createConnection({
+      host: '127.0.0.1',
+      user: 'root',
+      password: '',
+      database: 'DogWalkService'
+    });
+
+    console.log('Connected to database "DogWalkService".');
+
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS Users (
+        user_id INT AUTO_INCREMENT PRIMARY KEY,
+        username VARCHAR(50) UNIQUE NOT NULL,
+        email VARCHAR(100) UNIQUE NOT NULL,
+        password_hash VARCHAR(255) NOT NULL,
+        role ENUM('owner', 'walker') NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS Dogs (
+        dog_id INT AUTO_INCREMENT PRIMARY KEY,
+        owner_id INT NOT NULL,
+        name VARCHAR(50) NOT NULL,
+        size ENUM('small', 'medium', 'large') NOT NULL,
+        FOREIGN KEY (owner_id) REFERENCES Users(user_id)
+      )
+    `);
+
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS WalkRequests (
+        request_id INT AUTO_INCREMENT PRIMARY KEY,
+        dog_id INT NOT NULL,
+        requested_time DATETIME NOT NULL,
+        duration_minutes INT NOT NULL,
+        location VARCHAR(255) NOT NULL,
+        status ENUM('open', 'accepted', 'completed', 'cancelled') DEFAULT 'open',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (dog_id) REFERENCES Dogs(dog_id)
+      )
+    `);
+
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS WalkApplications (
+        application_id INT AUTO_INCREMENT PRIMARY KEY,
+        request_id INT NOT NULL,
+        walker_id INT NOT NULL,
+        applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        status ENUM('pending', 'accepted', 'rejected') DEFAULT 'pending',
+        FOREIGN KEY (request_id) REFERENCES WalkRequests(request_id),
+        FOREIGN KEY (walker_id) REFERENCES Users(user_id),
+        CONSTRAINT unique_application UNIQUE (request_id, walker_id)
+      )
+    `);
+
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS WalkRatings (
+        rating_id INT AUTO_INCREMENT PRIMARY KEY,
+        request_id INT NOT NULL,
+        walker_id INT NOT NULL,
+        owner_id INT NOT NULL,
+        rating INT CHECK (rating BETWEEN 1 AND 5),
+        comments TEXT,
+        rated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (request_id) REFERENCES WalkRequests(request_id),
+        FOREIGN KEY (walker_id) REFERENCES Users(user_id),
+        FOREIGN KEY (owner_id) REFERENCES Users(user_id),
+        CONSTRAINT unique_rating_per_walk UNIQUE (request_id)
+      )
+    `);
+
+    await db.execute('SET FOREIGN_KEY_CHECKS = 0');
+    await db.execute('TRUNCATE TABLE WalkRatings');
+    await db.execute('TRUNCATE TABLE WalkApplications');
+    await db.execute('TRUNCATE TABLE WalkRequests');
+    await db.execute('TRUNCATE TABLE Dogs');
+    await db.execute('TRUNCATE TABLE Users');
+    await db.execute('SET FOREIGN_KEY_CHECKS = 1');
+
+    await db.execute(`
+      INSERT IGNORE INTO Users (username, email, password_hash, role)
+      VALUES
+      ('alice123', 'alice@example.com', 'hashed123', 'owner'),
+      ('bobwalker', 'bob@example.com', 'hashed456', 'walker'),
+      ('carol123', 'carol@example.com', 'hashed789', 'owner'),
+      ('stevewalker', 'steve@example.com', 'hashed147', 'walker'),
+      ('jimmy123', 'jimmy@example.com', 'hashed369', 'owner')
+    `);
+
+    await db.execute(`
+      INSERT IGNORE INTO Dogs (owner_id, name, size)
+      VALUES
+      ((SELECT user_id FROM Users WHERE username = 'alice123'), 'Max', 'medium'),
+      ((SELECT user_id FROM Users WHERE username = 'carol123'), 'Bella', 'small'),
+      ((SELECT user_id FROM Users WHERE username = 'jimmy123'), 'Apple', 'large'),
+      ((SELECT user_id FROM Users WHERE username = 'alice123'), 'Banana', 'small'),
+      ((SELECT user_id FROM Users WHERE username = 'carol123'), 'Cake', 'medium')
+    `);
+
+    await db.execute(`
+      INSERT IGNORE INTO WalkRequests (dog_id, requested_time, duration_minutes, location, status)
+      VALUES
+      ((SELECT dog_id FROM Dogs WHERE name = 'Max'), '2025-06-10 08:00:00', 30, 'Parklands', 'open'),
+      ((SELECT dog_id FROM Dogs WHERE name = 'Bella'), '2025-06-10 09:30:00', 45, 'Beachside Ave', 'accepted'),
+      ((SELECT dog_id FROM Dogs WHERE name = 'Apple'), '2025-06-11 08:00:00', 60, 'Lakeside Trail', 'open'),
+      ((SELECT dog_id FROM Dogs WHERE name = 'Banana'), '2025-06-12 10:00:00', 40, 'Botanic Garden', 'open'),
+      ((SELECT dog_id FROM Dogs WHERE name = 'Cake'), '2025-06-13 17:30:00', 30, 'City Park', 'cancelled')
+    `);
+
+  } catch (err) {
+    console.error('Error setting up database.', err);
+  }
+})();
+
 // Routes
 const walkRoutes = require('./routes/walkRoutes');
 const userRoutes = require('./routes/userRoutes');
