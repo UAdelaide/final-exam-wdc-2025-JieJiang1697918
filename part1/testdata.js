@@ -14,7 +14,6 @@ async function testdata() {
         ('emilyowner', 'emily@example.com', 'hashemily', 'owner')
     `);
 
-    // Insert dogs
     await connection.query(`
       INSERT INTO Dogs (owner_id, name, size)
       VALUES
@@ -25,7 +24,6 @@ async function testdata() {
         ((SELECT user_id FROM Users WHERE username = 'carol123'), 'Daisy', 'medium')
     `);
 
-    // Insert walk requests
     await connection.query(`
       INSERT INTO WalkRequests (dog_id, requested_time, duration_minutes, location, status)
       VALUES
@@ -42,4 +40,4 @@ async function testdata() {
   }
 }
 
-module.exports = insertSampleData;
+module.exports = testdata;
