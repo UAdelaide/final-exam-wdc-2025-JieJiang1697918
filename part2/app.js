@@ -244,5 +244,27 @@ app.get('/api/users/me', (req, res) => {
   });
 });
 
+app.get('/api/walks/open', async (req, res) => {
+  if (!req.session.user || req.session.user.role !== 'walker') {
+    return res.status(403).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const [rows] = await db.execute(`
+      SELECT wr.request_id, d.name AS dog_name, d.size, wr.requested_time, wr.duration_minutes, wr.location, u.username AS owner_name
+      FROM WalkRequests wr
+      JOIN Dogs d ON wr.dog_id = d.dog_id
+      JOIN Users u ON d.owner_id = u.user_id
+      WHERE wr.status = 'open'
+      ORDER BY wr.requested_time ASC
+    `);
+
+    res.json(rows);
+  } catch (err) {
+    console.error('Error loading open walks:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Export the app instead of listening here
 module.exports = app;
