@@ -60,4 +60,4 @@ VALUES
 ('bobwalker', 'bob@example.com', 'hashed456', 'walker'),
 ('carol123', 'carol@example.com', 'hashed789', 'owner'),
 ('stevewalker', 'david@example.com', 'hashed', 'walker'),
-('jiowner', 'emily@example.com', 'hashemily', 'owner');
+('jimmyowner', 'emily@example.com', 'hashemily', 'owner');
