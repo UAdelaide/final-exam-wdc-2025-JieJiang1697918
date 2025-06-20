@@ -147,6 +147,8 @@ let db;
 })();
 
 // Routes
+
+
 const walkRoutes = require('./routes/walkRoutes');
 const userRoutes = require('./routes/userRoutes');
 
