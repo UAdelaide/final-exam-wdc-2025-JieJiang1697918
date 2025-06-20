@@ -6,7 +6,7 @@ app.use(express.json());
 
 // Create SQLite database
 const db = new Database('DogWalkService.db');
-console.log('✅ SQLite database ready.');
+console.log('SQLite database ready.');
 
 function insertData() {
   // Create tables
@@ -73,14 +73,12 @@ function insertData() {
     )
   `).run();
 
-  // Clear data
   db.prepare('DELETE FROM WalkRatings').run();
   db.prepare('DELETE FROM WalkApplications').run();
   db.prepare('DELETE FROM WalkRequests').run();
   db.prepare('DELETE FROM Dogs').run();
   db.prepare('DELETE FROM Users').run();
 
-  // Insert users
   const insertUser = db.prepare(`
     INSERT INTO Users (username, email, password_hash, role)
     VALUES (?, ?, ?, ?)
@@ -93,7 +91,6 @@ function insertData() {
 
   const getUserId = db.prepare('SELECT user_id FROM Users WHERE username = ?');
 
-  // Insert dogs
   const insertDog = db.prepare(`
     INSERT INTO Dogs (owner_id, name, size)
     VALUES (?, ?, ?)
