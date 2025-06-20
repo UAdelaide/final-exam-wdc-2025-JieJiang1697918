@@ -22,7 +22,7 @@ let db;
       password: ''
     });
 
-    console.log('✅ Connected to MySQL.');
+    console.log('Connected to MySQL.');
 
     await connection.query('CREATE DATABASE IF NOT EXISTS DogWalkService');
     console.log('✅ Database "DogWalkService" ready.');
