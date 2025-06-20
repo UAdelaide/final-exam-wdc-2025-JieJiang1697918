@@ -93,11 +93,6 @@
           try {
             const res = await fetch('/api/users/mydogs', { credentials: 'include' });
             if (!res.ok) throw new Error('Failed to load dogs');
-            for (const dog of data) {
-              const imgRes = await fetch('https://dog.ceo/api/breeds/image/random');
-              const imgData = await imgRes.json();
-              dog.photo = imgData.message;  // add photo property
-            }
             myDogs.value = await res.json();
           } catch (err) {
             console.error('Failed to load dogs:', err);
