@@ -148,20 +148,6 @@ let db;
 
 // Routes
 
-app.get('/api/dogs', async (req, res) => {
-  try {
-    const [dogs] = await db.execute(`
-      SELECT Dogs.dog_id, Dogs.name, Dogs.size, Users.username AS owner
-      FROM Dogs
-      JOIN Users ON Dogs.owner_id = Users.user_id
-    `);
-    res.json(dogs);
-  } catch (err) {
-    console.error('Failed to fetch dogs:', err);
-    res.status(500).json({ error: 'Failed to fetch dogs' });
-  }
-});
-
 const walkRoutes = require('./routes/walkRoutes');
 const userRoutes = require('./routes/userRoutes');
 
