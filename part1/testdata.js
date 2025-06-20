@@ -20,8 +20,8 @@ async function testdata() {
         ((SELECT user_id FROM Users WHERE username = 'alice123'), 'Max', 'medium'),
         ((SELECT user_id FROM Users WHERE username = 'carol123'), 'Bella', 'small'),
         ((SELECT user_id FROM Users WHERE username = 'jimmy123'), 'Apple', 'large'),
-        ((SELECT user_id FROM Users WHERE username = 'emilyowner'), 'Milo', 'small'),
-        ((SELECT user_id FROM Users WHERE username = 'carol123'), 'Daisy', 'medium')
+        ((SELECT user_id FROM Users WHERE username = 'alice123'), 'Banana', 'small'),
+        ((SELECT user_id FROM Users WHERE username = 'carol123'), 'Cake', 'medium')
     `);
 
     await connection.query(`
