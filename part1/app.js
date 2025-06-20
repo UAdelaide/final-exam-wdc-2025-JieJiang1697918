@@ -6,7 +6,7 @@ app.use(express.json());
 
 async function createDatabase() {
   const connection = await mysql.createConnection({
-    host: '127.0.0.1',
+    host: 'mysql',
     user: 'root',
     password: ''
   });
@@ -17,7 +17,7 @@ async function createDatabase() {
 }
 
 const pool = mysql.createPool({
-  host: '127.0.0.1',
+  host: 'mysql',
   user: 'root',
   password: '',
   database: 'DogWalkService',
