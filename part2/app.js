@@ -15,7 +15,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, '/public')));
 
 app.use(session({
-  secret: 'my-secret',
+  secret: 'dogwalk-2025-exam',
   resave: false,
   saveUninitialized: false,
   cookie: { maxAge: 60 * 60 * 1000 }
