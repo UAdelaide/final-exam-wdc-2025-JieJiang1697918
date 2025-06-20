@@ -22,7 +22,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
-testdata();
+(async () => {
+  try {
+    await testdata(pool);
+    console.log('Test data inserted.');
+  } catch (err) {
+    console.error('Error inserting test data:', err);
+  }
+})();
 
 app.get('/api/dogs', async (req, res) => {
   try {
