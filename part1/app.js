@@ -2,28 +2,107 @@ const express = require('express');
 const mysql = require('mysql2/promise');
 
 const app = express();
+app.use(express.json());
 
+// 第一步：创建数据库（如果不存在）
+async function createDatabase() {
+  const connection = await mysql.createConnection({
+    host: '127.0.0.1',
+    user: 'root',      // 修改成你的用户名
+    password: ''       // 修改成你的密码
+  });
+
+  await connection.query(`CREATE DATABASE IF NOT EXISTS DogWalkService`);
+  console.log('✅ Database DogWalkService ensured.');
+  await connection.end();
+}
+
+// 第二步：创建连接池
 const pool = mysql.createPool({
   host: '127.0.0.1',
   user: 'root',
   password: '',
   database: 'DogWalkService',
   waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0
+  connectionLimit: 10
 });
 
-app.use(express.json());
-
+// 第三步：插入测试数据
 async function insertData() {
   const conn = await pool.getConnection();
   try {
+    // 创建表（如果不存在）—— 你也可以提前用 schema.sql 手动执行
+    await conn.query(`
+      CREATE TABLE IF NOT EXISTS Users (
+        user_id INT AUTO_INCREMENT PRIMARY KEY,
+        username VARCHAR(50) UNIQUE NOT NULL,
+        email VARCHAR(100) UNIQUE NOT NULL,
+        password_hash VARCHAR(255) NOT NULL,
+        role ENUM('owner', 'walker') NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    await conn.query(`
+      CREATE TABLE IF NOT EXISTS Dogs (
+        dog_id INT AUTO_INCREMENT PRIMARY KEY,
+        owner_id INT NOT NULL,
+        name VARCHAR(50) NOT NULL,
+        size ENUM('small', 'medium', 'large') NOT NULL,
+        FOREIGN KEY (owner_id) REFERENCES Users(user_id)
+      )
+    `);
+
+    await conn.query(`
+      CREATE TABLE IF NOT EXISTS WalkRequests (
+        request_id INT AUTO_INCREMENT PRIMARY KEY,
+        dog_id INT NOT NULL,
+        requested_time DATETIME NOT NULL,
+        duration_minutes INT NOT NULL,
+        location VARCHAR(255) NOT NULL,
+        status ENUM('open', 'accepted', 'completed', 'cancelled') DEFAULT 'open',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (dog_id) REFERENCES Dogs(dog_id)
+      )
+    `);
+
+    await conn.query(`
+      CREATE TABLE IF NOT EXISTS WalkApplications (
+        application_id INT AUTO_INCREMENT PRIMARY KEY,
+        request_id INT NOT NULL,
+        walker_id INT NOT NULL,
+        applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        status ENUM('pending', 'accepted', 'rejected') DEFAULT 'pending',
+        FOREIGN KEY (request_id) REFERENCES WalkRequests(request_id),
+        FOREIGN KEY (walker_id) REFERENCES Users(user_id),
+        CONSTRAINT unique_application UNIQUE (request_id, walker_id)
+      )
+    `);
+
+    await conn.query(`
+      CREATE TABLE IF NOT EXISTS WalkRatings (
+        rating_id INT AUTO_INCREMENT PRIMARY KEY,
+        request_id INT NOT NULL,
+        walker_id INT NOT NULL,
+        owner_id INT NOT NULL,
+        rating INT CHECK (rating BETWEEN 1 AND 5),
+        comments TEXT,
+        rated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (request_id) REFERENCES WalkRequests(request_id),
+        FOREIGN KEY (walker_id) REFERENCES Users(user_id),
+        FOREIGN KEY (owner_id) REFERENCES Users(user_id),
+        CONSTRAINT unique_rating_per_walk UNIQUE (request_id)
+      )
+    `);
+
+    // 清空数据
     await conn.query('DELETE FROM WalkRatings');
     await conn.query('DELETE FROM WalkApplications');
     await conn.query('DELETE FROM WalkRequests');
     await conn.query('DELETE FROM Dogs');
     await conn.query('DELETE FROM Users');
 
+    // 插入数据
     await conn.query(`
       INSERT INTO Users (username, email, password_hash, role)
       VALUES
@@ -54,14 +133,15 @@ async function insertData() {
         ((SELECT dog_id FROM Dogs WHERE name = 'Cake'), '2025-06-13 17:30:00', 30, 'City Park', 'cancelled')
     `);
 
-    console.log('Sample data inserted.');
+    console.log('✅ Tables created and sample data inserted.');
   } catch (err) {
-    console.error('Error inserting data:', err);
+    console.error('❌ Error inserting data:', err.message);
   } finally {
     conn.release();
   }
 }
 
+// API 路由
 app.get('/api/dogs', async (req, res) => {
   try {
     const [rows] = await pool.query(`
@@ -71,7 +151,6 @@ app.get('/api/dogs', async (req, res) => {
     `);
     res.json(rows);
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -86,7 +165,6 @@ app.get('/api/walkrequests/open', async (req, res) => {
     `);
     res.json(rows);
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -108,9 +186,12 @@ app.get('/api/walkers/summary', async (req, res) => {
     `);
     res.json(rows);
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-module.exports = app;
+app.get('/', (req, res) => {
+  res.send('✅ DogWalkService API running.');
+});
+
+module.exports = { app, createDatabase, insertData };
