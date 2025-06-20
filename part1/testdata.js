@@ -1,7 +1,6 @@
-// insertSampleData.js
 const pool = require('./db');
 
-async function insertSampleData() {
+async function testdata() {
   const connection = await pool.getConnection();
   try {
     // Clear existing data for idempotency
