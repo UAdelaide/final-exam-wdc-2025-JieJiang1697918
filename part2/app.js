@@ -233,5 +233,16 @@ app.get('/api/walks', async (req, res) => {
   }
 });
 
+app.get('/api/users/me', (req, res) => {
+  if (!req.session.user) {
+    return res.status(403).json({ error: 'Unauthorized' });
+  }
+  res.json({
+    user_id: req.session.user.user_id,
+    role: req.session.user.role,
+    username: req.session.user.username
+  });
+});
+
 // Export the app instead of listening here
 module.exports = app;
