@@ -102,7 +102,6 @@ async function insertData() {
     await conn.query('DELETE FROM Dogs');
     await conn.query('DELETE FROM Users');
 
-    // 插入数据
     await conn.query(`
       INSERT INTO Users (username, email, password_hash, role)
       VALUES
@@ -133,15 +132,14 @@ async function insertData() {
         ((SELECT dog_id FROM Dogs WHERE name = 'Cake'), '2025-06-13 17:30:00', 30, 'City Park', 'cancelled')
     `);
 
-    console.log('✅ Tables created and sample data inserted.');
+    console.log('Tables created and sample data inserted.');
   } catch (err) {
-    console.error('❌ Error inserting data:', err.message);
+    console.error('Error inserting data:', err.message);
   } finally {
     conn.release();
   }
 }
 
-// API 路由
 app.get('/api/dogs', async (req, res) => {
   try {
     const [rows] = await pool.query(`
@@ -191,7 +189,7 @@ app.get('/api/walkers/summary', async (req, res) => {
 });
 
 app.get('/', (req, res) => {
-  res.send('✅ DogWalkService API running.');
+  res.send('DogWalkService API running.');
 });
 
 module.exports = { app, createDatabase, insertData };
