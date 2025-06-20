@@ -3,14 +3,7 @@ const pool = require('./db');
 async function testdata() {
   const connection = await pool.getConnection();
   try {
-    // Clear existing data for idempotency
-    await connection.query('DELETE FROM WalkRatings');
-    await connection.query('DELETE FROM WalkApplications');
-    await connection.query('DELETE FROM WalkRequests');
-    await connection.query('DELETE FROM Dogs');
-    await connection.query('DELETE FROM Users');
 
-    // Insert users
     await connection.query(`
       INSERT INTO Users (username, email, password_hash, role)
       VALUES
