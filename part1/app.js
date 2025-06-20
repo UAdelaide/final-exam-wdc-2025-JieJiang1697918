@@ -167,6 +167,30 @@ app.get('/api/walkrequests/open', async (req, res) => {
   }
 });
 
+app.get('/api/walkers/summary', async (req, res) => {
+  try {
+    const [summary] = await db.execute(`
+      SELECT
+        u.user_id AS walker_id,
+        u.username AS walker_name,
+        COUNT(DISTINCT a.application_id) AS total_applications,
+        SUM(CASE WHEN a.status = 'accepted' THEN 1 ELSE 0 END) AS accepted_applications,
+        ROUND(AVG(r.rating), 2) AS average_rating
+      FROM Users u
+      LEFT JOIN WalkApplications a ON u.user_id = a.walker_id
+      LEFT JOIN WalkRatings r ON u.user_id = r.walker_id
+      WHERE u.role = 'walker'
+      GROUP BY u.user_id, u.username
+      ORDER BY u.user_id ASC
+    `);
+
+    res.json(summary);
+  } catch (err) {
+    console.error('Failed to fetch walkers summary:', err);
+    res.status(500).json({ error: 'Failed to fetch walkers summary' });
+  }
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 module.exports = app;
