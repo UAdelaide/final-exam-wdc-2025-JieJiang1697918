@@ -28,7 +28,7 @@ let db;
 
     // Now connect to the created database
     db = await mysql.createConnection({
-      host: 'localhost',
+      host: '127.0.0.1',
       user: 'root',
       password: '',
       database: 'testdb'
