@@ -71,37 +71,19 @@ let db;
 
 
     // Insert data if table is empty
-    const [rows] = await db.execute('SELECT COUNT(*) AS count FROM Users');
+    const [rows] = await db.execute('SELECT COUNT(*) AS count FROM books');
     if (rows[0].count === 0) {
       await db.execute(`
-        INSERT INTO Users (username, email, password_hash, role) VALUES
-        ('alice123', 'alice@example.com', 'hashed123', 'owner'),
-        ('bobwalker', 'bob@example.com', 'hashed456', 'walker'),
-        ('carol123', 'carol@example.com', 'hashed789', 'owner'),
-        ('stevewalker', 'steve@example.com', 'hashed147', 'walker'),
-        ('jimmy123', 'jimmy@example.com', 'hashed369', 'owner')
+        INSERT INTO books (title, author) VALUES
+        ('1984', 'George Orwell'),
+        ('To Kill a Mockingbird', 'Harper Lee'),
+        ('Brave New World', 'Aldous Huxley')
       `);
     }
-
-    const [rows] = await db.execute('SELECT COUNT(*) AS count FROM Users');
-    if (rows[0].count === 0) {
-      await db.execute(`
-        INSERT INTO Dogs (owner_id, name, size)
-VALUES
-((SELECT user_id FROM Users WHERE username = 'alice123'), 'Max', 'medium'),
-((SELECT user_id FROM Users WHERE username = 'carol123'), 'Bella', 'small'),
-((SELECT user_id FROM Users WHERE username = 'jimmy123'), 'Apple', 'large'),
-((SELECT user_id FROM Users WHERE username = 'alice123'), 'Banana', 'small'),
-((SELECT user_id FROM Users WHERE username = 'carol123'), 'Cake', 'medium');
-      `);
-    }
-
   } catch (err) {
     console.error('Error setting up database. Ensure Mysql is running: service mysql start', err);
   }
 })();
-
-
 
 // Route to return books as JSON
 app.get('/', async (req, res) => {
