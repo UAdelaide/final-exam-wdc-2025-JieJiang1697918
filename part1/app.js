@@ -134,7 +134,7 @@ let db;
     console.log('All tables created and data inserted.');
 
   } catch (err) {
-    console.error('Error setting up database. Make sure MySQL is running!\n👉 Run: sudo service mysql start\n', err);
+    console.error('Error setting up database. Make sure MySQL is running!\nRun: sudo service mysql start\n', err);
   }
 })();
 
