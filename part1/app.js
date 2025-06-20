@@ -102,16 +102,12 @@ let db;
     `);
 
     await db.execute('SET FOREIGN_KEY_CHECKS = 0');
-
     await db.execute('TRUNCATE TABLE WalkRatings');
     await db.execute('TRUNCATE TABLE WalkApplications');
     await db.execute('TRUNCATE TABLE WalkRequests');
     await db.execute('TRUNCATE TABLE Dogs');
     await db.execute('TRUNCATE TABLE Users');
-
     await db.execute('SET FOREIGN_KEY_CHECKS = 1');
-
-    console.log('All tables truncated.');
 
     await db.execute(`
       INSERT IGNORE INTO Users (username, email, password_hash, role)
