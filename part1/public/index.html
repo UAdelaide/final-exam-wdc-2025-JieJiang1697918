@@ -3,6 +3,60 @@
 <head>
     <title>Express</title>
     <link rel="stylesheet" href="/stylesheets/style.css">
+      <style>
+    body {
+      background: linear-gradient(to right, #ffe, #eef);
+      color: #aaa; /* 低对比 */
+      font-family: "Papyrus", cursive;
+      font-size: 12px; /* 小字体 */
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      padding: 20px;
+      text-align: center;
+      font-size: 30px;
+      background: pink;
+      animation: spin 5s linear infinite;
+    }
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .content {
+      display: flex;
+      flex-wrap: wrap;
+      padding: 10px;
+    }
+    .card {
+      width: 150px;
+      border: 1px solid #ccc;
+      margin: 5px;
+      padding: 5px;
+      box-shadow: 5px 5px 10px #999;
+      background: #fff;
+    }
+    .refresh-button {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      font-size: 8px; /* 太小按钮 */
+      padding: 3px;
+      background: yellow;
+      cursor: pointer;
+    }
+    .marquee {
+      width: 100%;
+      overflow: hidden;
+      white-space: nowrap;
+      box-sizing: border-box;
+      animation: marquee 10s linear infinite;
+    }
+    @keyframes marquee {
+      0% { transform: translate(100%, 0); }
+      100% { transform: translate(-100%, 0); }
+    }
+  </style>
 </head>
 
 <body>
