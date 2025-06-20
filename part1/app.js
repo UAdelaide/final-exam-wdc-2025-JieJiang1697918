@@ -13,25 +13,22 @@ app.use(cookieParser());
 
 let db;
 
-// 初始化数据库
 (async () => {
   try {
     console.log('🔗 Connecting to MySQL server...');
     const connection = await mysql.createConnection({
       host: '127.0.0.1',
       user: 'root',
-      password: ''  // 你的 MySQL 密码
+      password: ''
     });
 
     console.log('✅ Connected to MySQL.');
 
-    // 创建数据库
     await connection.query('CREATE DATABASE IF NOT EXISTS DogWalkService');
     console.log('✅ Database "DogWalkService" ready.');
 
     await connection.end();
 
-    // 连接 DogWalkService 数据库
     db = await mysql.createConnection({
       host: '127.0.0.1',
       user: 'root',
@@ -41,7 +38,6 @@ let db;
 
     console.log('✅ Connected to database "DogWalkService".');
 
-    // 创建表
     await db.execute(`
       CREATE TABLE IF NOT EXISTS Users (
         user_id INT AUTO_INCREMENT PRIMARY KEY,
