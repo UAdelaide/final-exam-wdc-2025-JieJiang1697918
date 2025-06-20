@@ -206,7 +206,7 @@ app.get('/api/users/mydogs', async (req, res) => {
     );
 
     res.json(rows);
-  } catch (err) {
+    } catch (err) {
     console.error('Error loading dogs:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
