@@ -1,34 +1,48 @@
 const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
 const mysql = require('mysql2/promise');
 
 const app = express();
+
+app.use(logger('dev'));
 app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
 
-async function createDatabase() {
-  const connection = await mysql.createConnection({
-    host: '127.0.0.1',
-    user: 'root',
-    password: ''
-  });
+let db;
 
-  await connection.query(`CREATE DATABASE IF NOT EXISTS DogWalkService`);
-  console.log('Database DogWalkService ensured.');
-  await connection.end();
-}
-
-const pool = mysql.createPool({
-  host: '127.0.0.1',
-  user: 'root',
-  password: '',
-  database: 'DogWalkService',
-  waitForConnections: true,
-  connectionLimit: 10
-});
-
-async function insertData() {
-  const conn = await pool.getConnection();
+// 初始化数据库
+(async () => {
   try {
-    await conn.query(`
+    console.log('🔗 Connecting to MySQL server...');
+    const connection = await mysql.createConnection({
+      host: '127.0.0.1',
+      user: 'root',
+      password: ''  // 你的 MySQL 密码
+    });
+
+    console.log('✅ Connected to MySQL.');
+
+    // 创建数据库
+    await connection.query('CREATE DATABASE IF NOT EXISTS DogWalkService');
+    console.log('✅ Database "DogWalkService" ready.');
+
+    await connection.end();
+
+    // 连接 DogWalkService 数据库
+    db = await mysql.createConnection({
+      host: '127.0.0.1',
+      user: 'root',
+      password: '',
+      database: 'DogWalkService'
+    });
+
+    console.log('✅ Connected to database "DogWalkService".');
+
+    // 创建表
+    await db.execute(`
       CREATE TABLE IF NOT EXISTS Users (
         user_id INT AUTO_INCREMENT PRIMARY KEY,
         username VARCHAR(50) UNIQUE NOT NULL,
@@ -39,7 +53,7 @@ async function insertData() {
       )
     `);
 
-    await conn.query(`
+    await db.execute(`
       CREATE TABLE IF NOT EXISTS Dogs (
         dog_id INT AUTO_INCREMENT PRIMARY KEY,
         owner_id INT NOT NULL,
@@ -49,7 +63,7 @@ async function insertData() {
       )
     `);
 
-    await conn.query(`
+    await db.execute(`
       CREATE TABLE IF NOT EXISTS WalkRequests (
         request_id INT AUTO_INCREMENT PRIMARY KEY,
         dog_id INT NOT NULL,
@@ -62,7 +76,7 @@ async function insertData() {
       )
     `);
 
-    await conn.query(`
+    await db.execute(`
       CREATE TABLE IF NOT EXISTS WalkApplications (
         application_id INT AUTO_INCREMENT PRIMARY KEY,
         request_id INT NOT NULL,
@@ -75,7 +89,7 @@ async function insertData() {
       )
     `);
 
-    await conn.query(`
+    await db.execute(`
       CREATE TABLE IF NOT EXISTS WalkRatings (
         rating_id INT AUTO_INCREMENT PRIMARY KEY,
         request_id INT NOT NULL,
@@ -91,100 +105,75 @@ async function insertData() {
       )
     `);
 
-    await conn.query('DELETE FROM WalkRatings');
-    await conn.query('DELETE FROM WalkApplications');
-    await conn.query('DELETE FROM WalkRequests');
-    await conn.query('DELETE FROM Dogs');
-    await conn.query('DELETE FROM Users');
-
-    await conn.query(`
-      INSERT INTO Users (username, email, password_hash, role)
+    // 插入数据
+    await db.execute(`
+      INSERT IGNORE INTO Users (username, email, password_hash, role)
       VALUES
-        ('alice123', 'alice@example.com', 'hashed123', 'owner'),
-        ('bobwalker', 'bob@example.com', 'hashed456', 'walker'),
-        ('carol123', 'carol@example.com', 'hashed789', 'owner'),
-        ('stevewalker', 'steve@example.com', 'hashed147', 'walker'),
-        ('jimmy123', 'jimmy@example.com', 'hashed369', 'owner')
+      ('alice123', 'alice@example.com', 'hashed123', 'owner'),
+      ('bobwalker', 'bob@example.com', 'hashed456', 'walker'),
+      ('carol123', 'carol@example.com', 'hashed789', 'owner'),
+      ('stevewalker', 'steve@example.com', 'hashed147', 'walker'),
+      ('jimmy123', 'jimmy@example.com', 'hashed369', 'owner')
     `);
 
-    await conn.query(`
-      INSERT INTO Dogs (owner_id, name, size)
+    await db.execute(`
+      INSERT IGNORE INTO Dogs (owner_id, name, size)
       VALUES
-        ((SELECT user_id FROM Users WHERE username = 'alice123'), 'Max', 'medium'),
-        ((SELECT user_id FROM Users WHERE username = 'carol123'), 'Bella', 'small'),
-        ((SELECT user_id FROM Users WHERE username = 'jimmy123'), 'Apple', 'large'),
-        ((SELECT user_id FROM Users WHERE username = 'alice123'), 'Banana', 'small'),
-        ((SELECT user_id FROM Users WHERE username = 'carol123'), 'Cake', 'medium')
+      ((SELECT user_id FROM Users WHERE username = 'alice123'), 'Max', 'medium'),
+      ((SELECT user_id FROM Users WHERE username = 'carol123'), 'Bella', 'small'),
+      ((SELECT user_id FROM Users WHERE username = 'jimmy123'), 'Apple', 'large'),
+      ((SELECT user_id FROM Users WHERE username = 'alice123'), 'Banana', 'small'),
+      ((SELECT user_id FROM Users WHERE username = 'carol123'), 'Cake', 'medium')
     `);
 
-    await conn.query(`
-      INSERT INTO WalkRequests (dog_id, requested_time, duration_minutes, location, status)
+    await db.execute(`
+      INSERT IGNORE INTO WalkRequests (dog_id, requested_time, duration_minutes, location, status)
       VALUES
-        ((SELECT dog_id FROM Dogs WHERE name = 'Max'), '2025-06-10 08:00:00', 30, 'Parklands', 'open'),
-        ((SELECT dog_id FROM Dogs WHERE name = 'Bella'), '2025-06-10 09:30:00', 45, 'Beachside Ave', 'accepted'),
-        ((SELECT dog_id FROM Dogs WHERE name = 'Apple'), '2025-06-11 08:00:00', 60, 'Lakeside Trail', 'open'),
-        ((SELECT dog_id FROM Dogs WHERE name = 'Banana'), '2025-06-12 10:00:00', 40, 'Botanic Garden', 'open'),
-        ((SELECT dog_id FROM Dogs WHERE name = 'Cake'), '2025-06-13 17:30:00', 30, 'City Park', 'cancelled')
+      ((SELECT dog_id FROM Dogs WHERE name = 'Max'), '2025-06-10 08:00:00', 30, 'Parklands', 'open'),
+      ((SELECT dog_id FROM Dogs WHERE name = 'Bella'), '2025-06-10 09:30:00', 45, 'Beachside Ave', 'accepted'),
+      ((SELECT dog_id FROM Dogs WHERE name = 'Apple'), '2025-06-11 08:00:00', 60, 'Lakeside Trail', 'open'),
+      ((SELECT dog_id FROM Dogs WHERE name = 'Banana'), '2025-06-12 10:00:00', 40, 'Botanic Garden', 'open'),
+      ((SELECT dog_id FROM Dogs WHERE name = 'Cake'), '2025-06-13 17:30:00', 30, 'City Park', 'cancelled')
     `);
 
-    console.log('Tables created and sample data inserted.');
+    console.log('✅ All tables created and data inserted.');
+
   } catch (err) {
-    console.error('Error inserting data:', err.message);
-  } finally {
-    conn.release();
+    console.error('❌ Error setting up database. Make sure MySQL is running!\n👉 Run: sudo service mysql start\n', err);
   }
-}
+})();
 
+// API - Get all dogs
 app.get('/api/dogs', async (req, res) => {
   try {
-    const [rows] = await pool.query(`
-      SELECT d.dog_id, d.name AS dog_name, d.size, u.username AS owner_username
-      FROM Dogs d
-      JOIN Users u ON d.owner_id = u.user_id
+    const [dogs] = await db.execute(`
+      SELECT Dogs.dog_id, Dogs.name, Dogs.size, Users.username AS owner
+      FROM Dogs
+      JOIN Users ON Dogs.owner_id = Users.user_id
     `);
-    res.json(rows);
+    res.json(dogs);
   } catch (err) {
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('❌ Failed to fetch dogs:', err);
+    res.status(500).json({ error: 'Failed to fetch dogs' });
   }
 });
 
+// API - Get open walk requests
 app.get('/api/walkrequests/open', async (req, res) => {
   try {
-    const [rows] = await pool.query(`
-      SELECT wr.request_id, d.name AS dog_name, wr.requested_time, wr.duration_minutes, wr.location
-      FROM WalkRequests wr
-      JOIN Dogs d ON wr.dog_id = d.dog_id
-      WHERE wr.status = 'open'
+    const [requests] = await db.execute(`
+      SELECT WalkRequests.request_id, Dogs.name AS dog_name, requested_time, duration_minutes, location, status
+      FROM WalkRequests
+      JOIN Dogs ON WalkRequests.dog_id = Dogs.dog_id
+      WHERE WalkRequests.status = 'open'
     `);
-    res.json(rows);
+    res.json(requests);
   } catch (err) {
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('Failed to fetch walk requests:', err);
+    res.status(500).json({ error: 'Failed to fetch walk requests' });
   }
 });
 
-app.get('/api/walkers/summary', async (req, res) => {
-  try {
-    const [rows] = await pool.query(`
-      SELECT
-        u.user_id,
-        u.username,
-        COUNT(DISTINCT wa.request_id) AS applications,
-        COUNT(DISTINCT wr.request_id) AS accepted_walks
-      FROM Users u
-      LEFT JOIN WalkApplications wa ON u.user_id = wa.walker_id
-      LEFT JOIN WalkRequests wr
-        ON wa.request_id = wr.request_id AND wa.status = 'accepted'
-      WHERE u.role = 'walker'
-      GROUP BY u.user_id, u.username
-    `);
-    res.json(rows);
-  } catch (err) {
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
+app.use(express.static(path.join(__dirname, 'public')));
 
-app.get('/', (req, res) => {
-  res.send('DogWalkService API running.');
-});
-
-module.exports = { app, createDatabase, insertData };
+module.exports = app;
