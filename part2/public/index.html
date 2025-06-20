@@ -19,14 +19,14 @@
         <input v-model="username" id="username" type="text" class="form-control" required />
       </div>
 
-    <div class="mb-3">
-      <label for="password" class="form-label">Password:</label>
-      <input v-model="password" id="password" type="password" class="form-control" required />
-    </div>
+      <div class="mb-3">
+        <label for="password" class="form-label">Password:</label>
+        <input v-model="password" id="password" type="password" class="form-control" required />
+      </div>
 
-    <button type="submit" class="btn btn-primary">Login</button>
-    <p class="text-danger mt-2" v-if="errorMessage">{{ errorMessage }}</p>
-  </form>
+      <button type="submit" class="btn btn-primary">Login</button>
+      <p class="text-danger mt-2" v-if="errorMessage">{{ errorMessage }}</p>
+    </form>
 
     <a href="owner-dashboard.html" class="btn btn-outline-primary me-2">Owner Dashboard</a>
     <a href="walker-dashboard.html" class="btn btn-outline-success">Walker Dashboard</a>
