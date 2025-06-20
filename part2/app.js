@@ -194,10 +194,23 @@ app.post('/api/logout', (req, res) => {
   });
 });
 
-app.get('/api/users/mydogs', (req, res) => {
+app.get('/api/users/mydogs', async (req, res) => {
   if (!req.session.user || req.session.user.role !== 'owner') {
     return res.status(403).json({ error: 'Unauthorized' });
   }
+
+  try {
+    const [rows] = await db.execute(
+      'SELECT dog_id, name, size FROM Dogs WHERE owner_id = ?',
+      [req.session.user.user_id]
+    );
+
+    res.json(rows);
+  } catch (err) {
+    console.error('Error loading dogs:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
   db.execute(
     'SELECT dog_id, name, size FROM Dogs WHERE owner_id = ?',
