@@ -59,6 +59,18 @@
           }
         }
 
+        async function getCurrentUser() {
+          try {
+            const res = await fetch('/api/users/me', { credentials: 'include' });
+            if (!res.ok) throw new Error('Failed to fetch current user');
+            const user = await res.json();
+            return user;  // { user_id, role, username }
+          } catch (err) {
+            console.error('Error getting current user:', err);
+            return null;
+          }
+        }
+
         async function applyToWalk(requestId) {
           try {
             const res = await fetch(`/api/walks/${requestId}/apply`, {
