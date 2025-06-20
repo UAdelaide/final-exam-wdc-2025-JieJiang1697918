@@ -106,7 +106,6 @@ function insertData() {
 
   const getDogId = db.prepare('SELECT dog_id FROM Dogs WHERE name = ?');
 
-  // Insert walk requests
   const insertWalk = db.prepare(`
     INSERT INTO WalkRequests (dog_id, requested_time, duration_minutes, location, status)
     VALUES (?, ?, ?, ?, ?)
@@ -128,7 +127,7 @@ app.get('/api/dogs', (req, res) => {
     `).all();
     res.json(rows);
   } catch (err) {
-    console.error('❌ /api/dogs error:', err.message);
+    console.error('/api/dogs error:', err.message);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -142,7 +141,7 @@ app.get('/api/walkrequests/open', (req, res) => {
     `).all();
     res.json(rows);
   } catch (err) {
-    console.error('❌ /api/walkrequests/open error:', err.message);
+    console.error('/api/walkrequests/open error:', err.message);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
