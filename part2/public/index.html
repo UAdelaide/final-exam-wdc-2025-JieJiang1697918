@@ -13,6 +13,21 @@
     <h1 class="mb-4 text-primary">{{ message }}</h1>
     <p class="lead">Connect with trusted walkers for your beloved dog!</p>
 
+    <form @submit.prevent="login" class="mb-3">
+      <div class="mb-3">
+        <label for="username" class="form-label">Username:</label>
+        <input v-model="username" id="username" type="text" class="form-control" required />
+      </div>
+
+      <div class="mb-3">
+        <label for="password" class="form-label">Password:</label>
+        <input v-model="password" id="password" type="password" class="form-control" required />
+      </div>
+
+      <button type="submit" class="btn btn-primary">Login</button>
+      <p class="text-danger mt-2" v-if="errorMessage">{{ errorMessage }}</p>
+    </form>
+    
     <a href="owner-dashboard.html" class="btn btn-outline-primary me-2">Owner Dashboard</a>
     <a href="walker-dashboard.html" class="btn btn-outline-success">Walker Dashboard</a>
   </div>
@@ -22,8 +37,43 @@
     createApp({
       data() {
         return {
-          message: 'Welcome to the Dog Walking Service!'
+          message: 'Welcome to the Dog Walking Service!',
+          username: '',
+          password: '',
+          errorMessage: ''
         };
+      },
+      methods: {
+        async login() {
+          try {
+            const response = await fetch('/api/login', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                username: this.username,
+                password: this.password
+              })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+              // Redirect based on role
+              if (data.role === 'owner') {
+                window.location.href = 'owner-dashboard.html';
+              } else if (data.role === 'walker') {
+                window.location.href = 'walker-dashboard.html';
+              }
+            } else {
+              this.errorMessage = data.error || 'Login failed.';
+            }
+          } catch (err) {
+            console.error('Login error:', err);
+            this.errorMessage = 'An error occurred during login.';
+          }
+        }
       }
     }).mount('#app');
   </script>
