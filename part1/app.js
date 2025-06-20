@@ -105,7 +105,6 @@ let db;
       )
     `);
 
-    // 插入数据
     await db.execute(`
       INSERT IGNORE INTO Users (username, email, password_hash, role)
       VALUES
@@ -136,14 +135,13 @@ let db;
       ((SELECT dog_id FROM Dogs WHERE name = 'Cake'), '2025-06-13 17:30:00', 30, 'City Park', 'cancelled')
     `);
 
-    console.log('✅ All tables created and data inserted.');
+    console.log('All tables created and data inserted.');
 
   } catch (err) {
-    console.error('❌ Error setting up database. Make sure MySQL is running!\n👉 Run: sudo service mysql start\n', err);
+    console.error('Error setting up database. Make sure MySQL is running!\n👉 Run: sudo service mysql start\n', err);
   }
 })();
 
-// API - Get all dogs
 app.get('/api/dogs', async (req, res) => {
   try {
     const [dogs] = await db.execute(`
@@ -153,12 +151,11 @@ app.get('/api/dogs', async (req, res) => {
     `);
     res.json(dogs);
   } catch (err) {
-    console.error('❌ Failed to fetch dogs:', err);
+    console.error('Failed to fetch dogs:', err);
     res.status(500).json({ error: 'Failed to fetch dogs' });
   }
 });
 
-// API - Get open walk requests
 app.get('/api/walkrequests/open', async (req, res) => {
   try {
     const [requests] = await db.execute(`
