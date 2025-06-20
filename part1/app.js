@@ -187,4 +187,4 @@ app.get('/', (req, res) => {
   res.send('DogWalkService API running.');
 });
 
-module.exports = { app, createDatabase, insertData };
+module.exports = app;
