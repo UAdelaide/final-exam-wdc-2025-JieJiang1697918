@@ -212,6 +212,27 @@ app.get('/api/users/mydogs', async (req, res) => {
   }
 });
 
+app.get('/api/walks', async (req, res) => {
+  if (!req.session.user || req.session.user.role !== 'owner') {
+    return res.status(403).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const [rows] = await db.execute(`
+      SELECT wr.request_id, d.name AS dog_name, d.size, wr.requested_time, wr.duration_minutes, wr.location, wr.status
+      FROM WalkRequests wr
+      JOIN Dogs d ON wr.dog_id = d.dog_id
+      WHERE d.owner_id = ?
+      ORDER BY wr.requested_time DESC
+    `, [req.session.user.user_id]);
+
+    res.json(rows);
+  } catch (err) {
+    console.error('Error loading walks:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 const walkRoutes = require('./routes/walkRoutes');
 const userRoutes = require('./routes/userRoutes');
 
