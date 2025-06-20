@@ -3,11 +3,13 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 require('dotenv').config();
 const mysql = require('mysql2/promise');
+const logger = require('morgan');
 
 const app = express();
 
 // Middleware
 app.use(express.json());
+app.use(logger('dev'));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, '/public')));
 
