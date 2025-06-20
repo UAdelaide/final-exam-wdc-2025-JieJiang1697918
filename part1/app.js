@@ -5,7 +5,7 @@ const app = express();
 const PORT = 3000;
 
 const pool = mysql.createPool({
-  host: 'localhost',
+  host: '127.0.0.1',
   user: 'root',
   password: '',
   database: 'DogWalkService',
