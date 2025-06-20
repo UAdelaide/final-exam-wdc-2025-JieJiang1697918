@@ -210,7 +210,7 @@ app.get('/api/users/mydogs', async (req, res) => {
     console.error('Error loading dogs:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
-});
+  });
 
   db.execute(
     'SELECT dog_id, name, size FROM Dogs WHERE owner_id = ?',
