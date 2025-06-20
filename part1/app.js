@@ -2,7 +2,6 @@ const express = require('express');
 const mysql = require('mysql2/promise');
 
 const app = express();
-const PORT = 8080;
 
 const pool = mysql.createPool({
   host: '127.0.0.1',
