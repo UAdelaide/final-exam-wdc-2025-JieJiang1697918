@@ -4,6 +4,7 @@ const cookieParser = require('cookie-parser');
 require('dotenv').config();
 const mysql = require('mysql2/promise');
 const logger = require('morgan');
+const session = require('express-session');
 
 const app = express();
 
